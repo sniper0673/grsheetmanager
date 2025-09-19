@@ -1,6 +1,6 @@
 [project]
 name = "apsniper0673_grsheetmanager"
-version = "0.1.1"
+version = "0.1.2"
 description = "My grsheetmanager for APSniper0673"
 authors = [
   { name = "apsniper0673" }

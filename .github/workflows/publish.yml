@@ -1,0 +1,58 @@
+name: Publish to PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'  # v로 시작하는 태그를 푸시하면 실행 (예: v0.1.0)
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 저장소 체크아웃
+      - uses: actions/checkout@v3
+
+      # (선택 사항) 파일 구조 확인을 위한 디버깅 스텝
+      # 이 스텝을 추가하여 워크플로우 실행 중 파일들이 어디에 있는지 확인할 수 있습니다.
+      - name: List files for debugging
+        run: ls -R
+
+      # 2. 파이썬 환경 설정
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      # 3. 빌드 툴 설치
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          # 필요한 모든 빌드 도구를 한 번에 설치하고 업그레이드합니다.
+          pip install --upgrade setuptools wheel build twine pkginfo
+
+      # 4. 패키지 빌드
+      # 패키지 파일들이 루트에 위치하므로 working-directory를 지정할 필요가 없습니다.
+      - name: Build package
+        run: python -m build
+
+      # 4.5. 빌드된 패키지 확인 (디버깅용)
+      # dist/ 디렉토리의 내용을 확인하고, 빌드된 휠 파일의 메타데이터를 확인합니다.
+      - name: Verify built package
+        run: |
+          echo "Listing contents of dist/ directory:"
+          ls -l dist/
+          # 빌드된 휠 파일의 메타데이터를 확인합니다.
+          # 파일 이름은 실제 빌드된 파일 이름에 맞춰야 합니다. (예: apsniper0673_datahandler-0.1.6-py3-none-any.whl)
+          # 정확한 파일 이름을 모른다면, `ls dist/*.whl` 등으로 찾아서 사용하거나,
+          # `twine check` 명령을 사용하여 유효성을 검사할 수 있습니다.
+          echo "Checking metadata of the built wheel file(s):"
+          python -m twine check dist/*
+
+      # 5. Twine을 사용하여 PyPI로 업로드
+      # pypa/gh-action-pypi-publish 액션 대신 직접 twine 명령을 사용합니다.
+      - name: Publish to PyPI using Twine
+        run: python -m twine upload dist/*
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}

@@ -1,0 +1,8 @@
+flask
+waitress
+pandas
+gspread
+gspread_dataframe
+apsniper0673_stockutil
+apsniper0673_util
+tabulate
